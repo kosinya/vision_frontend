@@ -24,7 +24,24 @@ export default {
           name: 'ООО "Сетевая Безопасность"',
           createdAt: '2023-05-15',
           address: 'г. Москва, ул. Тверская, д. 10, офис 505',
-          status: 'active'
+          status: 'active',
+          image: "https://lh3.googleusercontent.com/proxy/wpWvQp15zavv8XSTZFyWFIzO-CtXFes3DwmJxPlQyZWaWXPF0CzSak_3eZ_AqA694xkq4Dajf-023obV-1UKoDxHlimktr3thw"
+        },
+        {
+          id: 1,
+          name: 'ООО "Сетевая Безопасность"',
+          createdAt: '2023-05-15',
+          address: 'г. Москва, ул. Тверская, д. 10, офис 505',
+          status: 'active',
+          image: "https://bfkh.ru/upload/iblock/8a3/1g6k7128t2o22et0l85aaq3prd9f83y1/Otkrytie-_1_.png"
+        },
+        {
+          id: 1,
+          name: 'ООО "Сетевая Безопасность"',
+          createdAt: '2023-05-15',
+          address: 'г. Москва, ул. Тверская, д. 10, офис 505',
+          status: 'active',
+          image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRsxWEdquta-3nqXkjvakLXLgcY65ZRExOgaA&s"
         }
       ]
     }
@@ -61,13 +78,30 @@ export default {
 </script>
 
 <template>
-  <!-- Кнопка для добавления организации -->
-  <div class="flex justify-content-end">
-    <button
-        @click="visible = true"
-        class="pi pi-plus p-2 border-round-xl cursor-pointer bg-white border-none shadow-1 text-900"
-        title="Добавить"
-    ></button>
+  <div class="flex gap-2">
+    <div class="flex w-full">
+      <input-text class="w-full border-0 border-round-xl" placeholder="Введите данные для поиска..."></input-text>
+    </div>
+
+    <button class="p-2 inline-flex align-items-center border-round-xl cursor-pointer bg-white border-none shadow-1 text-900">
+      <i class="pi pi-search mr-1"></i>
+      <span>Поиск</span>
+    </button>
+
+    <button class="p-2 inline-flex align-items-center border-round-xl cursor-pointer bg-white border-none shadow-1 text-900">
+      <i class="pi pi-filter mr-1"></i>
+      <span>Фильтры</span>
+    </button>
+
+    <!-- Кнопка для добавления организации -->
+    <div class="flex justify-content-end">
+      <button
+          @click="visible = true"
+          class="pi pi-plus p-2 border-round-xl cursor-pointer bg-white border-none shadow-1 text-900"
+          title="Добавить"
+      ></button>
+    </div>
+
   </div>
 
   <!-- Диалоговое окно для создания организации -->
@@ -91,8 +125,8 @@ export default {
   >
     <img
         alt="organization logo"
-        class="w-3 mr-4 border-round"
-        src="https://primefaces.org/cdn/primevue/images/usercard.png"
+        class="w-1 mr-4 border-round object-fill"
+        :src="organization.image"
     />
 
     <!-- Информация справа -->
@@ -120,15 +154,11 @@ export default {
 
       <!-- Кнопки действий -->
         <div class="flex gap-2 mt-auto">
-          <Button class="p-2 border-round">
-            <i class="pi pi-eye mr-2"></i>
-            <span>Просмотр</span>
-          </Button>
-          <button class="p-2 border-round">
+          <button class="p-2 border-0 border-round cursor-pointer bg-blue-100">
             <i class="pi pi-cog mr-2"></i>
             <span>Настройки</span>
           </button>
-          <button class="p-2 border-round">
+          <button class="p-2 border-0 border-round cursor-pointer bg-blue-100">
             <i class="pi pi-chart-bar mr-2"></i>
             <span>Аналитика</span>
           </button>
