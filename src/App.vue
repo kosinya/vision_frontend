@@ -31,7 +31,7 @@ export default {
       <div
           v-for="menu in menus"
           :key="menu.id"
-          class="p-3 border-round cursor-pointer text-xl"
+          class="custom-hover p-3 border-round cursor-pointer text-xl hover:shadow-2"
           :class="{ 'glass-active': currentRoute === menu.id }"
           @click="navigateTo(menu.id)"
       >
@@ -96,5 +96,14 @@ export default {
   rgba(255, 255, 255, 0.1) 100%,
   rgba(255, 255, 255, 0.05) 50%,
   rgba(0, 0, 0, 0.1) 100%)
+}
+
+.custom-hover {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.custom-hover:hover {
+  /*opacity: 0.65;*/
+  transform: translateY(-5px);
 }
 </style>
