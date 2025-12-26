@@ -4,6 +4,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 const OrganizationsView = () => import('@/views/OrganizationsView.vue')
 const TasksView = () => import('@/views/TasksView.vue')
 const ReportingView = () => import('@/views/ReportingView.vue')
+const OrganizationSettingsView = () => import('@/views/OrganizationSettingsView.vue')
 
 const routes = [
     {
@@ -23,6 +24,13 @@ const routes = [
         name: 'reporting',
         component: ReportingView,
         meta: { title: 'Отчеты' }
+    },
+    {
+        path: '/organizations/:id/cameras',
+        name: 'org-cameras',
+        component: OrganizationSettingsView,
+        meta: { title: 'Отчеты' },
+        props: true,
     }
 ]
 

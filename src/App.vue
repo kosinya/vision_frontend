@@ -20,21 +20,19 @@ export default {
   methods: {
     navigateTo(routeName) {
       this.$router.push({ name: routeName })
-    }
+    },
   }
 }
 </script>
 
 <template>
   <div class="flex h-screen p-2 gap-2 bg-blue-200 gradient-mask">
-    <div class="w-2 p-2 gap-1 flex flex-column border-round-xl glass-effect">
-      <div
-          v-for="menu in menus"
-          :key="menu.id"
-          class="custom-hover p-3 border-round cursor-pointer text-xl hover:shadow-2"
-          :class="{ 'glass-active': currentRoute === menu.id }"
-          @click="navigateTo(menu.id)"
-      >
+    <div class="w-2 p-3 gap-2 flex flex-column border-round-xl glass-effect">
+      <div v-for="(menu, index) in menus"
+           :key="menu.id"
+           class="custom-hover p-3 border-round cursor-pointer text-xl shadow-1"
+           :class="{'glass-active': currentRoute === menu.id,}"
+           @click="navigateTo(menu.id)">
         {{ menu.name }}
       </div>
     </div>

@@ -4,6 +4,8 @@ import InputText from 'primevue/inputtext';
 import Button from 'primevue/button';
 import Select from 'primevue/select';
 
+import { organizationsApi } from '@/api/organizationApi.js'
+
 export default {
   name: 'OrganizationsView',
   components: {
@@ -14,6 +16,9 @@ export default {
   },
   data() {
     return {
+      organizations: [],
+      loading: false,
+      error: null,
       visible: false, // Видимость диалогового окна
       newOrgName: '', // Название новой организации
       search: '', // Поисковой запрос пользователя
@@ -35,54 +40,47 @@ export default {
           label: 'По активности',
           value: 'active'          
         }       
-      ],
-      // Список организаций
-      // TODO: Удалить добавлении API
-      organizations: [
-        {
-          id: 1,
-          name: 'ООО "Сбер"',
-          createdAt: '2023-05-15',
-          address: 'г. Москва, ул. Тверская, д. 10, офис 505',
-          status: 'active',
-          image: "https://жкрусскийсевер.рф/assets/cache_image/assets/files/img/banks/sber_570x570_fd2.jpg"
-        },
-        {
-          id: 1,
-          name: 'ООО "ПочтаБанк"',
-          createdAt: '2023-06-15',
-          address: 'г. Москва, ул. Тверская, д. 10, офис 505',
-          status: 'active',
-          image: "https://жкрусскийсевер.рф/assets/cache_image/assets/files/img/banks/pochta_570x570_fd2.jpg"
-        },
-        {
-          id: 1,
-          name: 'ООО "ВТБ"',
-          createdAt: '2023-08-15',
-          address: 'г. Москва, ул. Тверская, д. 10, офис 505',
-          status: 'active',
-          image: "https://mariupol.gosuslugi.ru/netcat_files/generated/97/139/760x570/833/8ef1b78ef551488a260b0753c523292c.jpg?crop=0%3A0%3A0%3A0&hash=1b8b8d8a96e39042e12a3003548c1cc9&resize_mode=0&wm_m=0"
-        }
       ]
     }
   },
+  async created() {
+    await this.loadOrganizations()
+  },
   methods: {
-    createOrganization() {
-      if (!this.newOrgName) return;
+    // Загрузка списка организаций
+    // TODO: Добавить пагинацию
+    async loadOrganizations() {
+      this.loading = true
+      this.error = null
+      try {
+        this.organizations = await organizationsApi.getOrganizations()
+      } catch (err) {
+        this.error = err.message
+      } finally {
+        this.loading = false
+      }
+    },
 
-      const newOrg = {
-        id: Date.now(),
-        name: this.newOrgName,
-        createdAt: new Date().toISOString(),
-        // Копирование остальных полей
-        address: 'г. Москва, ул. Тверская, д. 10, офис 505',
-        status: 'active'
-      };
+    async addOrganization() {
+      try {
+        const newOrg = await organizationsApi.createOrganization({
+          name: this.newOrgName,
+        })
+        this.organizations.push(newOrg)
+      } catch (err) {
+        this.error = err.message
+      }
+      this.newOrgName = ''
+      this.visible = false
+    },
 
-      this.organizations.push(newOrg);
-      // Сброс данных
-      this.newOrgName = '';
-      this.visible = false;
+    async deleteOrganization(id) {
+      try {
+        await organizationsApi.deleteOrganization(id)
+        this.organizations = this.organizations.filter(org => org.id !== id)
+      } catch (err) {
+        this.error = err.message
+      }
     },
 
     formatDate(dateString) {
@@ -188,7 +186,7 @@ export default {
     <div class="flex flex-column gap-3">
       <InputText v-model="newOrgName" placeholder="Название организации" class="w-full" />
       <div class="flex justify-content-end">
-        <Button label="Создать" @click="createOrganization" />
+        <Button label="Создать" @click="addOrganization()" />
       </div>
     </div>
   </Dialog>
@@ -199,8 +197,8 @@ export default {
   >
     <img
         alt="organization logo"
-        class="w-1 mr-4 border-round object-fill"
-        :src="organization.image"
+        class="w-1 mr-3 border-round"
+        src="https://st3.depositphotos.com/1864689/18698/i/450/depositphotos_186980740-stock-photo-rendering-bank-vault-gold-bars.jpg"
     />
 
     <!-- Информация справа -->
@@ -208,10 +206,10 @@ export default {
       <!-- Заголовок и статус -->
       <div class="flex justify-content-between align-items-start">
         <div>
-          <h3 class="text-xl font-bold">{{ organization.name }}</h3>
+          <h3 class="text-xl font-bold mb-1">{{ organization.name }}</h3>
           <div class="flex align-items-center">
             <i class="pi pi-calendar mr-2 text-sm"></i>
-            <span>Создана: {{ formatDate(organization.createdAt) }}</span>
+            <span>Создана: {{ formatDate(organization.created_at) }}</span>
           </div>
         </div>
         <div class="flex align-items-center ml-auto">
@@ -223,12 +221,18 @@ export default {
       <!-- Адрес -->
       <div class="flex align-items-center">
         <i class="pi pi-map-marker mr-2"></i>
-        <div class="text-sm">Адрес: {{ organization.address }}</div>
+        <div class="text-sm">Адрес: Пример адресса</div>
       </div>
 
       <!-- Кнопки действий -->
         <div class="flex gap-2 mt-auto">
-          <button class="p-2 border-none border-round cursor-pointer bg-blue-100">
+          <button
+              class="p-2 border-none border-round cursor-pointer bg-blue-100"
+              @click="this.$router.push({
+                name: 'org-cameras',
+                params: {id: organization.id}
+              })"
+          >
             <i class="pi pi-cog mr-2"></i>
             <span>Настройки</span>
           </button>

@@ -3,6 +3,7 @@ import Dialog from 'primevue/dialog';
 import InputText from 'primevue/inputtext';
 import Button from 'primevue/button';
 import Select from 'primevue/select';
+import {organizationsApi} from "@/api/organizationApi.js";
 
 export default {
   name: 'TasksView',
@@ -37,23 +38,22 @@ export default {
         }       
       ],  
       // Список задач
-      tasks: [
-        {
-          id: 1,
-          name: 'ООО "Сетевая Безопасность"',
-          createdAt: '2023-05-15',
-          status: 'active'
-        },
-        {
-          id: 2,
-          name: 'ООО "Сбер"',
-          createdAt: '2023-05-15',
-          status: 'active'
-        },
-      ]
+      tasks: []
     }
   },
   methods: {
+    async loadTasks() {
+      this.loading = true
+      this.error = null
+      try {
+        this.organizations = await organizationsApi.getOrganizations()
+      } catch (err) {
+        this.error = err.message
+      } finally {
+        this.loading = false
+      }
+    },
+
     createTask() {
       if (!this.newTaskName) return;
 
@@ -205,7 +205,7 @@ export default {
       <div class="flex gap-2">
         <button class="p-2 border-none border-round cursor-pointer bg-blue-100">
           <i class="pi pi-pen-to-square mr-2"></i>
-          <span>Редактировать</span>
+          <span>Перейти к задаче</span>
         </button>
         <button class="p-2 border-none border-round cursor-pointer bg-blue-100">
           <i class="pi pi-eye mr-2"></i>
@@ -213,7 +213,7 @@ export default {
         </button>
         <button class="p-2 border-none border-round cursor-pointer bg-blue-100">
           <i class="pi pi-chart-bar mr-2"></i>
-          <span>Статистика</span>
+          <span>Отчет</span>
         </button>
       </div>
     </div>
