@@ -5,6 +5,7 @@ const OrganizationsView = () => import('@/views/OrganizationsView.vue')
 const TasksView = () => import('@/views/TasksView.vue')
 const ReportingView = () => import('@/views/ReportingView.vue')
 const OrganizationSettingsView = () => import('@/views/OrganizationSettingsView.vue')
+const TaskSetting = () => import('@/views/TaskSetting.vue')
 
 const routes = [
     {
@@ -31,6 +32,13 @@ const routes = [
         component: OrganizationSettingsView,
         meta: { title: 'Отчеты' },
         props: true,
+    },
+    {
+        path: '/tasks/:id',
+        name: 'tasks',
+        component: TaskSetting,
+        meta: { title: 'Задачи' },
+        props: true
     }
 ]
 
