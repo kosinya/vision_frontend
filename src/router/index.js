@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import TaskSettingsView from "@/views/TaskSettingsView.vue";
 
 // Импортируем компоненты
 const OrganizationsView = () => import('@/views/OrganizationsView.vue')
@@ -31,14 +30,14 @@ const routes = [
         path: '/organizations/:id/cameras',
         name: 'org-cameras',
         component: OrganizationSettingsView,
-        meta: { title: 'Отчеты' },
+        meta: { title: 'Настройки организации' },
         props: true,
     },
     {
         path: '/tasks/:id',
-        name: 'tasks',
-        component: TaskSettingsView,
-        meta: { title: 'Задачи' },
+        name: 'task-setting',
+        component: TaskSettingView,
+        meta: { title: 'Задача' },
         props: true
     }
 ]

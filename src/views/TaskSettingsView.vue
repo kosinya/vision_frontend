@@ -7,11 +7,11 @@
         <div class="flex flex-column md:flex-row gap-3">
           <div>
             <div class="text-xl text-gray-600">Дата создания задачи:</div>
-            <div class="text-xl font-semibold text-gray-900">{{ formatDate(task.createdAt) }}</div>
+            <div class="text-xl font-semibold text-gray-900">{{ formatDate(task.created_at) }}</div>
           </div>
           <div>
             <div class="text-xl text-gray-600">Организация:</div>
-            <div class="text-xl font-semibold text-gray-900">{{ task.organization }}</div>
+            <div class="text-xl font-semibold text-gray-900">{{ task.organization_id }}</div>
           </div>
         </div>
       </div>
@@ -204,87 +204,61 @@
     </div>
 
     <!-- Диалог загрузки файла -->
-    <div
-        v-if="showUploadDialog"
-        class="fixed inset-0 bg-black bg-opacity-50 flex align-items-center justify-content-center z-50"
-        @click.self="closeDialog"
-    >
-      <div class="bg-white rounded-lg w-11 md:w-4 mx-4" style="max-width: 400px;">
-        <div class="p-4 border-b-1 border-gray-200">
-          <h3 class="text-lg font-semibold m-0 text-gray-900">Загрузка файла</h3>
-        </div>
+    <dialog v-if="showUploadDialog"
+            class="flex flex-column gap-2 p-3 border-1 border-gray-400"
+            click.self="closeDialog">
+      <h3 class="text-lg font-semibold m-0 text-gray-900">Загрузка файла</h3>
 
-        <div class="p-4">
-          <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Файл Excel</label>
-            <div
-                @click="triggerFileInput"
-                class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-blue-400 transition-colors duration-200"
-            >
-              <i class="pi pi-file-excel text-3xl text-green-500 mb-2"></i>
-              <p class="text-sm text-gray-600 mb-1">
-                {{ selectedFileName }}
-              </p>
-              <p class="text-xs text-gray-500">Поддерживаемые форматы: .xlsx, .xls</p>
-            </div>
-            <input
-                type="file"
-                ref="dialogFileInput"
-                @change="handleFileSelect"
-                accept=".xlsx,.xls"
-                class="hidden"
-            />
-          </div>
+      <div class="flex flex-column">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Файл Excel</label>
+        <div @click="triggerFileInput"
+             class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer
+             hover:border-blue-400 transition-colors duration-200">
+          <i class="pi pi-file-excel text-3xl text-green-600 mb-2"></i>
+          <p class="text-gray-700 mb-1">
+            {{ selectedFileName }}
+          </p>
+          <p class="text-gray-600">Поддерживаемые форматы: .xlsx, .xls</p>
         </div>
-
-        <div class="p-4 border-t-1 border-gray-200 flex justify-content-end gap-2">
-          <button
-              @click="closeDialog"
-              class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded border-1 border-gray-300 transition-colors duration-200"
-          >
-            Отмена
-          </button>
-          <button
-              @click="processUpload"
-              :disabled="!selectedFile"
-              class="px-4 py-2 bg-blue-500 text-white rounded border-none hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-          >
-            {{ isUploading ? 'Загрузка...' : 'Загрузить' }}
-          </button>
-        </div>
+        <input type="file"
+               ref="dialogFileInput"
+               @change="handleFileSelect"
+               accept=".xlsx,.xls"
+               class="hidden"/>
       </div>
-    </div>
 
-    <!-- Уведомление -->
-    <div
-        v-if="showNotification"
-        class="fixed bottom-4 right-4 bg-green-500 text-white p-3 rounded-lg shadow-lg flex align-items-center gap-3 z-50 animate-fadein"
-    >
-      <i class="pi pi-check-circle text-xl"></i>
-      <div>
-        <div class="font-medium">Успешно</div>
-        <div class="text-sm opacity-90">Файл успешно загружен</div>
+      <div class="flex justify-content-start gap-2">
+        <button @click="closeDialog"
+                class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded border-1 border-gray-300 transition-colors
+                duration-200">
+          Отмена
+        </button>
+        <button @click="processUpload"
+                :disabled="!selectedFile"
+                class="px-4 py-2 bg-blue-500 text-white rounded border-none hover:bg-blue-600 disabled:opacity-50
+                disabled:cursor-not-allowed transition-colors duration-200">
+          {{ isUploading ? 'Загрузка...' : 'Загрузить' }}
+        </button>
       </div>
-      <button
-          @click="hideNotification"
-          class="ml-2 text-white hover:text-gray-200"
-      >
-        <i class="pi pi-times"></i>
-      </button>
-    </div>
+    </dialog>
   </div>
 </template>
 
 <script>
+import {taskApi} from "@/api/taskApi.js";
+
 export default {
-  name: 'VideoAnalyticsTask',
+  name: 'TaskSettingsView',
+  props: {
+    id: {
+      type: [String, Number],
+      required: true
+    }
+  },
 
   data() {
     return {
-      task: {
-        createdAt: new Date(),
-        organization: 'ООО "Безопасные Технологии"'
-      },
+      task: {},
       players: [
         {
           id: 1,
@@ -336,6 +310,11 @@ export default {
       currentPage: 1,
       pageSize: 5
     }
+  },
+
+  async created() {
+    this.task = await taskApi.getTask(this.id);
+    console.log(this.task);
   },
 
   computed: {

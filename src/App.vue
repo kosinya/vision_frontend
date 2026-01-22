@@ -8,7 +8,8 @@ export default {
       menus: [
         { id: 'organizations', name: 'Организации' },
         { id: 'tasks', name: 'Задачи' },
-        { id: 'reporting', name: 'Отчетность' }
+        { id: 'reporting', name: 'Отчетность' },
+
       ]
     }
   },

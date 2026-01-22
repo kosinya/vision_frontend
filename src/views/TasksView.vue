@@ -3,7 +3,7 @@ import Dialog from 'primevue/dialog';
 import InputText from 'primevue/inputtext';
 import Button from 'primevue/button';
 import Select from 'primevue/select';
-import {organizationsApi} from "@/api/organizationApi.js";
+import {taskApi} from "@/api/taskApi.js";
 
 export default {
   name: 'TasksView',
@@ -46,7 +46,7 @@ export default {
       this.loading = true
       this.error = null
       try {
-        this.organizations = await organizationsApi.getOrganizations()
+        this.tasks = await taskApi.getTasks()
       } catch (err) {
         this.error = err.message
       } finally {
@@ -109,6 +109,9 @@ export default {
       // Если выбрано "Все" или ничего не выбрано, возвращаем результат поиска
       return result;
     }
+  },
+  async created() {
+    await this.loadTasks();
   }
 }
 </script>
@@ -178,32 +181,31 @@ export default {
     </div>
   </Dialog>
 
-  <div 
-    v-for="taskItem in searchedTasks" 
-    :key="taskItem.id" 
-    class="flex flex-row glass-effect p-4 border-round-xl mt-2"
-  >
+  <div v-for="taskItem in searchedTasks"
+       :key="taskItem.id"
+       class="flex flex-row glass-effect p-4 border-round-xl mt-2">
 
     <!-- Информация справа -->
     <div class="flex-1">
       <!-- Заголовок и статус -->
       <div class="flex justify-content-between align-items-start mb-3">
         <div>
-          <h3 class="text-xl font-bold m-0">{{ taskItem.name }}</h3>
+          <h3 class="text-xl font-bold m-0">{{ taskItem.title }}</h3>
           <div class="flex align-items-center mt-1">
             <i class="pi pi-calendar mr-2 text-sm"></i>
-            <span>Создана: {{ formatDate(taskItem.createdAt) }}</span>
+            <span>Создана: {{ formatDate(taskItem.created_at) }}</span>
           </div>
         </div>
-        <div class="flex align-items-center">
-          <i class="pi pi-circle-fill mr-2 text-green-400"></i>
-          <span class="text-sm">Активна</span>
+        <div class="flex flex-column align-items-end">
+          <span class="text-sm">Организация:</span>
+          <span class="text-sm">{{ taskItem.organization_id }}</span>
         </div>
       </div>
 
       <!-- Кнопки действий -->
       <div class="flex gap-2">
-        <button class="p-2 border-none border-round cursor-pointer bg-blue-100">
+        <button class="p-2 border-none border-round cursor-pointer bg-blue-100"
+                @click="this.$router.push({ name: 'task-setting', params: { id: taskItem.id } })">
           <i class="pi pi-pen-to-square mr-2"></i>
           <span>Перейти к задаче</span>
         </button>
