@@ -18,14 +18,14 @@
 
       <!-- Кнопка загрузки -->
       <button @click="openUploadDialog"
-              class="flex ml-auto align-items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white text-lg font-medium py-2 px-4
+              class="flex ml-auto align-items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium py-2 px-4
               border-round-sm border-none cursor-pointer transition-colors duration-200">
         <i class="pi pi-upload"></i>
         <span>Загрузить карту дня</span>
       </button>
 
-      <button @click="openUploadDialog"
-              class="flex align-items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white text-lg font-medium py-2 px-4
+      <button @click="showVideoFolderUpload = true"
+              class="flex align-items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white text-sn font-medium py-2 px-4
               border-round-sm border-none cursor-pointer transition-colors duration-200">
         <i class="pi pi-upload"></i>
         <span>Загрузить папку с видео</span>
@@ -76,11 +76,11 @@
             <td class="py-3 px-2 text-lg">
               <div class="flex align-items-center">
                 <i class="pi pi-video mr-2 text-gray-900"></i>
-                <span>{{ video.name }}</span>
+                <span>{{ video.title }}</span>
               </div>
             </td>
             <td class="py-3 px-2 text-lg">
-              <span>{{ formatDuration(video.duration) }}</span>
+              <span>Нет данных</span>
             </td>
             <td class="py-3 px-2 text-lg">
                 <span
@@ -93,6 +93,12 @@
           </tr>
           </tbody>
         </table>
+
+        <button class="flex align-items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white text-sn font-medium py-2 px-4
+                border-round-sm border-none cursor-pointer transition-colors duration-200"
+                @click="addVideosToQueue">
+          Поставить видео в очередь на обработку
+        </button>
 
         <!-- Пагинация -->
         <div v-if="totalPages > 1" class="flex justify-content-between align-items-center mt-4 pt-3 border-t-1 border-gray-200">
@@ -127,75 +133,32 @@
     </div>
 
     <!-- Видеоплееры -->
-    <div class="bg-white border-1 border-gray-200 rounded-lg p-4">
+    <div class="bg-white border-1 border-gray-200 rounded-lg p-4 w-full">
       <h3 class="text-xl font-semibold mb-4 text-gray-900">Видеоплееры</h3>
-      <div class="flex flex-column gap-4 h-screen">
-        <!-- Первый ряд (2 плеера) -->
-        <div class="flex gap-4" style="height: 50%;">
-          <div v-for="index in [0, 1]"
-               :key="index"
-               class="border-1 border-gray-200 rounded-lg overflow-hidden w-6">
-              <div class="flex justify-content-between align-items-center p-3 bg-gray-50 border-b-1 border-gray-200">
-              <span class="font-medium text-gray-900">Камера {{ index + 1 }}</span>
-              <span class="px-2 py-1 text-xs rounded-full"
-                    :class="{'bg-green-100 text-green-800': players[index].isActive,
-                    'bg-gray-100 text-gray-600': !players[index].isActive}">
-                {{ players[index].status }}
-              </span>
-            </div>
-
-            <!-- Контейнер для видеоплеера -->
-            <div class="relative w-full" style="height: calc(100% - 48px);">
-              <video
-                  v-if="players[index].source"
-                  :ref="'videoPlayer' + index"
-                  controls
-                  class="absolute w-full h-full object-contain bg-black"
-                  preload="metadata"
-              >
-                <source :src="players[index].source" type="application/x-mpegURL">
-                Ваш браузер не поддерживает видео.
-              </video>
-              <div v-else class="absolute w-full h-full flex align-items-center justify-content-center bg-gray-100">
-                <div class="text-center">
-                  <i class="pi pi-video text-4xl text-gray-400 mb-2"></i>
-                  <p class="text-sm text-gray-500">Нет видеопотока</p>
-                </div>
-              </div>
-            </div>
+      <div class="flex justify-content-center w-full">
+        <div class="border-1 border-gray-200 rounded-lg w-full max-w-4xl">
+          <div class="flex justify-content-between align-items-center p-3 bg-gray-50 border-b-1 border-gray-200">
+            <span class="font-medium text-gray-900">Камера 1</span>
+            <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">
+          Активно
+        </span>
           </div>
-        </div>
-        <!-- Первый ряд (2 плеера) -->
-        <div class="flex gap-4" style="height: 50%;">
-          <div v-for="index in [0, 1]"
-               :key="index"
-               class="border-1 border-gray-200 rounded-lg overflow-hidden w-6">
-            <div class="flex justify-content-between align-items-center p-3 bg-gray-50 border-b-1 border-gray-200">
-              <span class="font-medium text-gray-900">Камера {{ index + 1 }}</span>
-              <span class="px-2 py-1 text-xs rounded-full"
-                    :class="{'bg-green-100 text-green-800': players[index].isActive,
-                    'bg-gray-100 text-gray-600': !players[index].isActive}">
-                {{ players[index].status }}
-              </span>
-            </div>
 
-            <!-- Контейнер для видеоплеера -->
-            <div class="relative w-full" style="height: calc(100% - 48px);">
-              <video
-                  v-if="players[index].source"
-                  :ref="'videoPlayer' + index"
-                  controls
-                  class="absolute w-full h-full object-contain bg-black"
-                  preload="metadata"
-              >
-                <source :src="players[index].source" type="application/x-mpegURL">
-                Ваш браузер не поддерживает видео.
-              </video>
-              <div v-else class="absolute w-full h-full flex align-items-center justify-content-center bg-gray-100">
-                <div class="text-center">
-                  <i class="pi pi-video text-4xl text-gray-400 mb-2"></i>
-                  <p class="text-sm text-gray-500">Нет видеопотока</p>
-                </div>
+          <!-- Контейнер для видеоплеера -->
+          <div class="relative w-full" style="aspect-ratio: 16/9;">
+            <video
+                v-if="players.source"
+                controls
+                class="absolute w-full h-full object-contain bg-black"
+                preload="metadata"
+            >
+              <source :src="players.source" type="application/x-mpegURL">
+              Ваш браузер не поддерживает видео.
+            </video>
+            <div v-else class="absolute w-full h-full flex align-items-center justify-content-center bg-gray-100">
+              <div class="text-center">
+                <i class="pi pi-video text-4xl text-gray-400 mb-2"></i>
+                <p class="text-sm text-gray-500">Нет видеопотока</p>
               </div>
             </div>
           </div>
@@ -241,6 +204,31 @@
         </button>
       </div>
     </dialog>
+
+    <dialog v-if="showVideoFolderUpload"
+            class="flex flex-column gap-4 p-4 border-1 border-gray-400 bg-white rounded-lg shadow-lg"
+            style="width: 400px; max-width: 90vw;"
+            @click.self="closeDialog">
+      <h3 class="text-lg font-semibold m-0 text-gray-900">Путь папки с видео</h3>
+
+      <div class="flex flex-column gap-3">
+        <input class="p-1" v-model:="this.rootPath">
+      </div>
+
+      <div class="flex justify-content-end gap-2 mt-2">
+        <button @click="closeFileDialog"
+                class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded border-1 border-gray-300 transition-colors
+            duration-200">
+          Отмена
+        </button>
+        <button @click="confirmFolderSelection"
+                class="px-4 py-2 bg-blue-500 text-white rounded border-none hover:bg-blue-600 disabled:opacity-50
+            disabled:cursor-not-allowed transition-colors duration-200">
+          {{ isUploading ? 'Загрузка...' : 'Загрузить' }}
+        </button>
+      </div>
+    </dialog>
+
   </div>
 </template>
 
@@ -259,42 +247,13 @@ export default {
   data() {
     return {
       task: {},
-      players: [
-        {
-          id: 1,
-          source: 'https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8',
-          status: 'Активно',
-          isActive: true
-        },
-        {
-          id: 2,
-          source: '',
-          status: 'Офлайн',
-          isActive: false
-        },
-        {
-          id: 3,
-          source: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8',
-          status: 'Активно',
-          isActive: true
-        },
-        {
-          id: 4,
-          source: '',
-          status: 'Офлайн',
-          isActive: false
-        }
-      ],
-      videos: [
-        { id: 1, name: 'parking_entrance_1.mp4', duration: 300, status: 'active', videoDuration: '00:05:00' },
-        { id: 2, name: 'main_hall_camera.mp4', duration: 600, status: 'queued', videoDuration: '00:10:00' },
-        { id: 3, name: 'loading_zone.mp4', duration: 450, status: 'completed', videoDuration: '00:07:30' },
-        { id: 5, name: 'entrance_gate.mp4', duration: 180, status: 'active', videoDuration: '00:03:00' },
-        { id: 6, name: 'warehouse_aisle.mp4', duration: 900, status: 'queued', videoDuration: '00:15:00' },
-        { id: 7, name: 'office_lobby.mp4', duration: 300, status: 'completed', videoDuration: '00:05:00' },
-        { id: 9, name: 'roof_camera.mp4', duration: 500, status: 'active', videoDuration: '00:08:20' },
-        { id: 10, name: 'reception_area.mp4', duration: 400, status: 'queued', videoDuration: '00:06:40' }
-      ],
+      players: {
+        id: 1,
+        source: 'http://localhost:9876/hls/live/4c3672c6-ecff-4cf4-8e29-f0aedaca3bfe.m3u8',
+        status: 'Активно',
+        isActive: true
+      },
+      videos: [],
       statuses: [
         { label: 'Все', value: 'all', color: '#6366F1' },
         { label: 'Активно', value: 'active', color: '#10B981' },
@@ -304,17 +263,22 @@ export default {
       selectedVideo: null,
       activeStatus: 'all',
       showUploadDialog: false,
+      showVideoFolderUpload: false,
       selectedFile: null,
       isUploading: false,
       showNotification: false,
       currentPage: 1,
-      pageSize: 5
+      pageSize: 5,
+      rootPath: "",
+      refreshInterval: null
     }
   },
 
   async created() {
     this.task = await taskApi.getTask(this.id);
+    this.videos = await taskApi.getVideos(this.id);
     console.log(this.task);
+    console.log(this.videos);
   },
 
   computed: {
@@ -364,6 +328,47 @@ export default {
   },
 
   methods: {
+    async loadVideos() {
+      try {
+        this.videos = await taskApi.getVideos(this.id);
+      } catch (error) {
+        console.error('Ошибка загрузки видео:', error);
+      }
+    },
+
+    async addVideosToQueue() {
+      await taskApi.enqueueVideo(this.id)
+    },
+
+    selectFolder() {
+      this.$refs.folderInput?.click()
+    },
+
+    confirmFolderSelection() {
+      if (this.rootPath) {
+        this.isUploading = true
+        // Имитация загрузки
+        setTimeout(() => {
+          this.isUploading = false
+          this.showVideoFolderUpload = false
+
+          let data = {
+            "root_path": this.rootPath,
+            "recursive": true
+          }
+          taskApi.scanVideo(this.id, data)
+        }, 10)
+        console.log(this.rootPath)
+      }
+    },
+
+    closeFileDialog() {
+      this.showVideoFolderUpload = false
+      // Очищаем инпут при закрытии
+      if (this.$refs.folderInput) {
+        this.$refs.folderInput.value = ''
+      }
+    },
     // Форматирование данных
     formatDate(date) {
       return new Date(date).toLocaleDateString('ru-RU', {
@@ -514,14 +519,24 @@ export default {
           })
         }
       })
-    }
+    },
   },
-
   mounted() {
     // Инициализация видеоплееров
     this.$nextTick(() => {
       this.initializeVideoPlayers()
     })
+
+    this.loadVideos();
+    this.refreshInterval = setInterval(() => {
+      this.loadVideos();
+    }, 5000);
+  },
+
+  beforeUnmount() {
+    if (this.refreshInterval) {
+      clearInterval(this.refreshInterval);
+    }
   },
 
   watch: {

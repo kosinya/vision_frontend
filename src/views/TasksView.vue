@@ -15,8 +15,12 @@ export default {
   },
   data() {
     return {
+      organization_id: "38a58016-b4d5-470f-88d6-c95d467677f8",
       visible: false, // видимость окна для создания задачи
-      newTaskName: '',
+      newTask: {
+        title: "",
+        description: "",
+      },
       search: '', // Поисковой запрос пользователя
       selectedStatus: '', // Опция фильтра
       statuses: [
@@ -55,18 +59,11 @@ export default {
     },
 
     createTask() {
-      if (!this.newTaskName) return;
+      if (!this.newTask.title) return;
 
-      const newTask = {
-        id: Date.now(),
-        name: this.newTaskName,
-        createdAt: new Date().toISOString(),
-        status: 'active'
-      };
-
-      this.tasks.push(newTask);
+      taskApi.createTask(this.newTask, this.organization_id);
       
-      this.newTaskName = '';
+      this.newTask.title = this.newTask.description = "";
       this.visible = false;
     },
 
@@ -174,7 +171,8 @@ export default {
     :style="{ width: '20rem' }"
   >
     <div class="flex flex-column gap-3">
-      <InputText v-model="newTaskName" placeholder="Название задачи" class="w-full" />
+      <InputText v-model="newTask.title" placeholder="Название задачи" class="w-full" />
+      <InputText v-model="newTask.description" placeholder="Описание задачи" class="w-full" />
       <div class="flex justify-content-end">
          <Button label="Создать" @click="createTask" />
       </div>

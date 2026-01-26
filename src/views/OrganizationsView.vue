@@ -198,7 +198,7 @@ export default {
     <img
         alt="organization logo"
         class="w-1 mr-3 border-round"
-        src="https://st3.depositphotos.com/1864689/18698/i/450/depositphotos_186980740-stock-photo-rendering-bank-vault-gold-bars.jpg"
+        src="https://i.pinimg.com/736x/ec/03/77/ec037754473332101c08e0bd02e6ba65.jpg"
     />
 
     <!-- Информация справа -->
