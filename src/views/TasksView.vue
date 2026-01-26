@@ -15,7 +15,7 @@ export default {
   },
   data() {
     return {
-      organization_id: "38a58016-b4d5-470f-88d6-c95d467677f8",
+      organization_id: "ae2f3bd4-0bc4-4afd-b714-8a391ec2112e",
       visible: false, // видимость окна для создания задачи
       newTask: {
         title: "",

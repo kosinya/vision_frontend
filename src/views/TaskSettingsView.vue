@@ -63,6 +63,7 @@
               <th>Название</th>
               <th>Длительность</th>
               <th>Статус</th>
+              <th>Действия</th>
             </tr>
           </thead>
           <tbody>
@@ -89,6 +90,13 @@
                 >
                   {{ getStatusLabel(video.status) }}
                 </span>
+            </td>
+            <td>
+              <button class="flex align-items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white text-sn font-medium py-2 px-4
+                border-round-sm border-none cursor-pointer transition-colors duration-200"
+                      @click="this.show(video.id)">
+                Показать
+              </button>
             </td>
           </tr>
           </tbody>
@@ -151,8 +159,8 @@
                 controls
                 class="absolute w-full h-full object-contain bg-black"
                 preload="metadata"
+                :src="players.source"
             >
-              <source :src="players.source" type="application/x-mpegURL">
               Ваш браузер не поддерживает видео.
             </video>
             <div v-else class="absolute w-full h-full flex align-items-center justify-content-center bg-gray-100">
@@ -328,6 +336,13 @@ export default {
   },
 
   methods: {
+    show(video_id) {
+      taskApi.getHls(video_id).then(response => {
+        this.players.source = response["hls_url"]
+        console.log(this.players.source)
+      })
+    },
+
     async loadVideos() {
       try {
         this.videos = await taskApi.getVideos(this.id);

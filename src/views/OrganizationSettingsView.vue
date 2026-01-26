@@ -47,7 +47,7 @@ export default {
     },
 
     redirectExternal() {
-      let url = `http://192.168.8.115:9876/api/v1/organizations/${this.id}/camera-presets/create-with-canvas`
+      let url = `http://localhost:9876/api/v1/organizations/${this.id}/camera-presets/create-with-canvas`
       const link = document.createElement('a')
       link.href = url
       link.target = '_blank'
