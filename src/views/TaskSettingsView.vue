@@ -30,6 +30,12 @@
         <i class="pi pi-upload"></i>
         <span>Загрузить папку с видео</span>
       </button>
+
+      <button @click="showVideoFolderUpload = true"
+              class="flex align-items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white text-sn font-medium py-2 px-4
+              border-round-sm border-none cursor-pointer transition-colors duration-200">
+        <i class="pi pi-upload"></i>
+      </button>
     </div>
 
     <!-- Список видео -->
@@ -155,20 +161,12 @@
           <!-- Контейнер для видеоплеера -->
           <div class="relative w-full" style="aspect-ratio: 16/9;">
             <video
-                v-if="players.source"
+                id="video"
+                ref="videoElement"
                 controls
-                class="absolute w-full h-full object-contain bg-black"
-                preload="metadata"
-                :src="players.source"
-            >
-              Ваш браузер не поддерживает видео.
-            </video>
-            <div v-else class="absolute w-full h-full flex align-items-center justify-content-center bg-gray-100">
-              <div class="text-center">
-                <i class="pi pi-video text-4xl text-gray-400 mb-2"></i>
-                <p class="text-sm text-gray-500">Нет видеопотока</p>
-              </div>
-            </div>
+                autoplay
+                class="w-full h-full border-round"
+            ></video>
           </div>
         </div>
       </div>
@@ -242,6 +240,7 @@
 
 <script>
 import {taskApi} from "@/api/taskApi.js";
+import Hls from 'hls.js'
 
 export default {
   name: 'TaskSettingsView',
@@ -254,6 +253,7 @@ export default {
 
   data() {
     return {
+      streamUrl: "",
       task: {},
       players: {
         id: 1,
@@ -336,11 +336,49 @@ export default {
   },
 
   methods: {
-    show(video_id) {
-      taskApi.getHls(video_id).then(response => {
-        this.players.source = response["hls_url"]
-        console.log(this.players.source)
+    show(id) {
+      taskApi.getHls(id).then((res) => {
+        this.streamUrl = res["hls_url"].replace("/live", "").replace(".m3u8", "/index.m3u8")
+        console.log(this.streamUrl)
       })
+      // taskApi.getHlsHTML(id).then(html => {
+      //   console.log(html)
+      // })
+    },
+
+    loadStream() {
+      const video = document.getElementById('video');
+
+      if (!video) return
+
+      if (this.hls) {
+        this.hls.destroy()
+      }
+
+      if (Hls.isSupported()) {
+        console.log("Поддерживается")
+        this.hls = new Hls({ lowLatencyMode: true })
+        this.hls.loadSource(this.streamUrl)
+        this.hls.attachMedia(video)
+
+        this.hls.on(Hls.Events.MEDIA_ATTACHED, () => console.log('media attached'));
+        this.hls.on(Hls.Events.ERROR, (e, data) => console.warn('HLS error', data));
+      } else if (video.canPlayType('application/vnd.apple.mpegURL')) {
+        video.src = this.streamUrl;
+      } else {
+        document.body.insertAdjacentHTML('beforeend', '<p>Ваш браузер не поддерживает HLS</p>');
+      }
+    },
+
+    destroyPlayer() {
+      if (this.hls) {
+        this.hls.destroy()
+      }
+    },
+
+    reloadStream() {
+      this.destroyPlayer()
+      this.loadStream()
     },
 
     async loadVideos() {
@@ -523,25 +561,8 @@ export default {
       // Здесь можно добавить отображение ошибки
       console.error(message)
     },
-
-    // Инициализация видеоплееров
-    initializeVideoPlayers() {
-      this.players.forEach((player, index) => {
-        const videoElement = this.$refs['videoPlayer' + index]
-        if (videoElement && player.source) {
-          videoElement.addEventListener('error', (e) => {
-            console.error(`Ошибка в плеере ${index + 1}:`, e)
-          })
-        }
-      })
-    },
   },
   mounted() {
-    // Инициализация видеоплееров
-    this.$nextTick(() => {
-      this.initializeVideoPlayers()
-    })
-
     this.loadVideos();
     this.refreshInterval = setInterval(() => {
       this.loadVideos();
@@ -558,6 +579,10 @@ export default {
     activeStatus() {
       // Сбрасываем на первую страницу при изменении фильтра
       this.currentPage = 1
+    },
+
+    streamUrl() {
+      this.reloadStream()
     }
   }
 }

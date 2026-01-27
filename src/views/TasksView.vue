@@ -15,7 +15,8 @@ export default {
   },
   data() {
     return {
-      organization_id: "ae2f3bd4-0bc4-4afd-b714-8a391ec2112e",
+      // organization_id: "ae2f3bd4-0bc4-4afd-b714-8a391ec2112e",
+      organization_id: "e12a42d9-5698-476c-aabd-6879e1bb56db",
       visible: false, // видимость окна для создания задачи
       newTask: {
         title: "",
@@ -46,6 +47,32 @@ export default {
     }
   },
   methods: {
+    show(id) {
+      taskApi.generateReport(id).then(response => {
+        console.log("Отчет сформирован.");
+      })
+    },
+
+    getReport(id) {
+
+      taskApi.getReport(id).then(response => {
+        console.log(response.data);
+        const blob = new Blob([response], { type: 'application/octet-stream' })
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+
+        const filename = `report.txt`
+        link.setAttribute('download', filename)
+
+        document.body.appendChild(link)
+        link.click()
+
+        window.URL.revokeObjectURL(url)
+        document.body.removeChild(link)
+      })
+    },
+
     async loadTasks() {
       this.loading = true
       this.error = null
@@ -61,10 +88,13 @@ export default {
     createTask() {
       if (!this.newTask.title) return;
 
-      taskApi.createTask(this.newTask, this.organization_id);
+      taskApi.createTask(this.newTask, this.organization_id).then(response => {
+        this.loadTasks();
+      });
       
       this.newTask.title = this.newTask.description = "";
       this.visible = false;
+
     },
 
     formatDate(dateString) {
@@ -211,7 +241,8 @@ export default {
           <i class="pi pi-eye mr-2"></i>
           <span>Карта дня</span>
         </button>
-        <button class="p-2 border-none border-round cursor-pointer bg-blue-100">
+        <button class="p-2 border-none border-round cursor-pointer bg-blue-100"
+                @click="this.getReport(taskItem.id)">
           <i class="pi pi-chart-bar mr-2"></i>
           <span>Отчет</span>
         </button>

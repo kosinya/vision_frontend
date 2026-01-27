@@ -28,5 +28,18 @@ export const taskApi = {
     async getHls(id) {
         const response = await api.get(`videos/${id}/hls`)
         return response.data
+    },
+    async getHlsHTML(id) {
+        const response = await api.get(`videos/${id}/hls.html`)
+        console.log(response)
+        return response.data
+    },
+    async generateReport(task_id) {
+        const response = await api.post(`/day-maps/${task_id}/generate-report`)
+        return response.data
+    },
+    async getReport(task_id) {
+        const response = await api.get(`/day-maps/${task_id}/report?format=txt`)
+        return response.data
     }
 }
