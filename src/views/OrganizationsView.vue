@@ -5,6 +5,7 @@ import Button from 'primevue/button';
 import Select from 'primevue/select';
 
 import { organizationsApi } from '@/api/organizationApi.js'
+import { organizationsStore } from "@/stores/organizationsStore.js";
 
 export default {
   name: 'OrganizationsView',
@@ -14,11 +15,14 @@ export default {
     Button,
     Select,
   },
+  setup() {
+    const store = organizationsStore()
+    store.loadOrganizations()
+    return { store }
+  },
   data() {
     return {
       organizations: [],
-      loading: false,
-      error: null,
       visible: false, // Видимость диалогового окна
       newOrgName: '', // Название новой организации
       search: '', // Поисковой запрос пользователя
@@ -43,24 +47,8 @@ export default {
       ]
     }
   },
-  async created() {
-    await this.loadOrganizations()
-  },
-  methods: {
-    // Загрузка списка организаций
-    // TODO: Добавить пагинацию
-    async loadOrganizations() {
-      this.loading = true
-      this.error = null
-      try {
-        this.organizations = await organizationsApi.getOrganizations()
-      } catch (err) {
-        this.error = err.message
-      } finally {
-        this.loading = false
-      }
-    },
 
+  methods: {
     async addOrganization() {
       try {
         const newOrg = await organizationsApi.createOrganization({
@@ -92,9 +80,10 @@ export default {
       })
     }
   },
+
   computed: {
     searchedOrganizations() {
-      let result = this.organizations;
+      let result = this.store.organizations;
 
       // Если в поле поиска что-то написано, фильтруем список
       if (this.search) {
@@ -137,32 +126,26 @@ export default {
       <span>Поиск</span>
     </button>
 
-    <Select v-model="selectedStatus" 
-        :options="statuses"
-        optionLabel="label"
-        optionValue="value"
-        placeholder="Фильтры"
-        class="inline-flex align-items-center border-round-xl cursor-pointer bg-white border-none shadow-1 text-900"
-        :pt="{ //меняем цвет для выбранного поля (option)
-          option: ({context}) => ({
-            class: context.selected ? 'bg-blue-100 text-gray-800' : undefined
-          })
-        }"
-        >
+    <Select v-model="selectedStatus" :options="statuses" optionLabel="label" optionValue="value"
+            placeholder="Фильтры"
+            class="inline-flex align-items-center border-round-xl cursor-pointer bg-white border-none shadow-1 text-900"
+            :pt="{ //меняем цвет для выбранного поля (option)
+              option: ({context}) => ({
+              class: context.selected ? 'bg-blue-100 text-gray-800' : undefined
+              })
+            }">
 
-        <template #value="slotName"> <!-- записываем #value (value нашего слота) в slotName"-->
-            
-            <div v-if="slotName.value && slotName.value !== 'null'" class="flex align-items-center">
-                <i class="pi pi-filter-fill mr-2 text-gray-500"></i>
-                <span>{{ statuses.find(s => s.value === slotName.value)?.label }}</span> <!-- отображаем label соответствующего value -->
-            </div>
+      <template #value="slotName"> <!-- записываем #value (value нашего слота) в slotName"-->
+        <div v-if="slotName.value && slotName.value !== 'null'" class="flex align-items-center">
+            <i class="pi pi-filter-fill mr-2 text-gray-500"></i>
+            <span>{{ statuses.find(s => s.value === slotName.value)?.label }}</span> <!-- отображаем label соответствующего value -->
+        </div>
 
-            <div v-else class="flex align-items-center">
-                <i class="pi pi-filter mr-2"></i>
-                <span>Фильтры</span>
-            </div>
-            
-        </template>
+        <div v-else class="flex align-items-center">
+            <i class="pi pi-filter mr-2"></i>
+            <span>Фильтры</span>
+        </div>
+      </template>
     </Select>
 
     <!-- Кнопка для добавления организации -->
@@ -190,6 +173,11 @@ export default {
       </div>
     </div>
   </Dialog>
+
+  <!-- Загрузка -->
+  <div v-if="store.loading" class="p-4 text-center">
+    <i class="pi pi-spin pi-spinner"></i>
+  </div>
 
   <div v-for="organization in searchedOrganizations"
       :key="organization.id"

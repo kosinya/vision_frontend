@@ -9,10 +9,15 @@ const TaskSettingView = () => import('@/views/TaskSettingsView.vue')
 
 const routes = [
     {
+        path: '/',
+        name: 'Home',
+        component: OrganizationsView,
+    },
+    {
         path: '/organizations',
         name: 'organizations',
         component: OrganizationsView,
-        meta: { title: 'Организации' }
+        meta: { title: 'Организации' },
     },
     {
         path: '/tasks',

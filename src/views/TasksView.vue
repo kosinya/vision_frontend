@@ -4,6 +4,8 @@ import InputText from 'primevue/inputtext';
 import Button from 'primevue/button';
 import Select from 'primevue/select';
 import {taskApi} from "@/api/taskApi.js";
+import {organizationsStore} from "@/stores/organizationsStore.js";
+import {organizationsApi} from "@/api/organizationApi.js";
 
 export default {
   name: 'TasksView',
@@ -13,15 +15,19 @@ export default {
     Button,
     Select
   },
+  setup() {
+    const store = organizationsStore()
+    return { store }
+  },
   data() {
     return {
-      // organization_id: "ae2f3bd4-0bc4-4afd-b714-8a391ec2112e",
-      organization_id: "e12a42d9-5698-476c-aabd-6879e1bb56db",
-      visible: false, // видимость окна для создания задачи
+      selectedOrganization: null,
+      tasks: [],
       newTask: {
         title: "",
         description: "",
       },
+      visible: false, // видимость окна для создания задачи
       search: '', // Поисковой запрос пользователя
       selectedStatus: '', // Опция фильтра
       statuses: [
@@ -41,20 +47,12 @@ export default {
           label: 'По активности',
           value: 'active'          
         }       
-      ],  
-      // Список задач
-      tasks: []
+      ]
     }
   },
+
   methods: {
-    show(id) {
-      taskApi.generateReport(id).then(response => {
-        console.log("Отчет сформирован.");
-      })
-    },
-
     getReport(id) {
-
       taskApi.getReport(id).then(response => {
         console.log(response.data);
         const blob = new Blob([response], { type: 'application/octet-stream' })
@@ -88,7 +86,7 @@ export default {
     createTask() {
       if (!this.newTask.title) return;
 
-      taskApi.createTask(this.newTask, this.organization_id).then(response => {
+      taskApi.createTask(this.newTask, this.selectedOrganization.id).then(response => {
         this.loadTasks();
       });
       
@@ -107,6 +105,9 @@ export default {
     }
   },
   computed: {
+    organizationsApi() {
+      return organizationsApi
+    },
     searchedTasks() {
       let result = this.tasks;
 
@@ -155,54 +156,42 @@ export default {
     </button>
 
     <Select v-model="selectedStatus" 
-        :options="statuses"
-        optionLabel="label"
-        optionValue="value"
-        placeholder="Фильтры"
-        class="inline-flex align-items-center border-round-xl cursor-pointer bg-white border-none shadow-1 text-900"
-        :pt="{ //меняем цвет для выбранного поля (option)
-          option: ({context}) => ({
-            class: context.selected ? 'bg-blue-100 text-gray-800' : undefined
-          })
-        }"
-        >
-
-        <template #value="slotName"> <!-- записываем #value (value нашего слота) в slotName"-->
-            
-            <div v-if="slotName.value && slotName.value !== 'null'" class="flex align-items-center">
-                <i class="pi pi-filter-fill mr-2 text-gray-500"></i>
-                <span>{{ statuses.find(s => s.value === slotName.value)?.label }}</span> <!-- отображаем label соответствующего value -->
-            </div>
-
-            <div v-else class="flex align-items-center">
-                <i class="pi pi-filter mr-2"></i>
-                <span>Фильтры</span>
-            </div>
-            
-        </template>
-      </Select>
+            :options="statuses"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Фильтры"
+            class="inline-flex align-items-center border-round-xl cursor-pointer bg-white border-none shadow-1 text-900"
+            :pt="{ option: ({context}) => ({ class: context.selected ? 'bg-blue-100 text-gray-800' : undefined })}">
+      <template #value="slotName"> <!-- записываем #value (value нашего слота) в slotName"-->
+          <div v-if="slotName.value && slotName.value !== 'null'" class="flex align-items-center">
+              <i class="pi pi-filter-fill mr-2 text-gray-500"></i>
+              <span>{{ statuses.find(s => s.value === slotName.value)?.label }}</span> <!-- отображаем label соответствующего value -->
+          </div>
+          <div v-else class="flex align-items-center">
+              <i class="pi pi-filter mr-2"></i>
+              <span>Фильтры</span>
+          </div>
+      </template>
+    </Select>
 
     <!-- Кнопка для добавления задачи -->
     <div class="flex justify-content-end">
-      <button
-          @click="visible = true"
-          class="pi pi-plus p-2 border-round-xl cursor-pointer bg-white border-none shadow-1 text-900"
-          title="Добавить"
-      ></button>
+      <button @click="visible = true"
+              class="pi pi-plus p-2 border-round-xl cursor-pointer bg-white border-none shadow-1 text-900"
+              title="Добавить">
+      </button>
     </div>
-
   </div>
 
   <!-- Диалоговое окно для создания задачи -->
-  <Dialog 
-    v-model:visible="visible" 
-    modal 
-    header="Новая задача" 
-    :style="{ width: '20rem' }"
-  >
+  <Dialog v-model:visible="visible" modal header="Создание новой задачи" :style="{ width: '20rem' }">
     <div class="flex flex-column gap-3">
       <InputText v-model="newTask.title" placeholder="Название задачи" class="w-full" />
       <InputText v-model="newTask.description" placeholder="Описание задачи" class="w-full" />
+      <Select v-model="selectedOrganization" :options="this.store.getOrganizations" optionLabel="name"
+              placeholder="Организация">
+
+      </Select>
       <div class="flex justify-content-end">
          <Button label="Создать" @click="createTask" />
       </div>
