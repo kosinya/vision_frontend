@@ -4,6 +4,7 @@ import router from './router'
 
 import PrimeVue from 'primevue/config'
 import Aura from '@primeuix/themes/aura'
+import { createPinia } from 'pinia'
 
 createApp(App)
     .use(PrimeVue, {
@@ -32,4 +33,5 @@ createApp(App)
         }
     })
     .use(router)
+    .use(createPinia())
     .mount('#app')

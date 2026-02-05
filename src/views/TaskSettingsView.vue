@@ -6,43 +6,37 @@
         <h2 class="text-3xl font-bold mb-2 text-gray-900">Задача видеоаналитики</h2>
         <div class="flex flex-column md:flex-row gap-3">
           <div>
-            <div class="text-xl text-gray-600">Дата создания задачи:</div>
-            <div class="text-xl font-semibold text-gray-900">{{ formatDate(task.created_at) }}</div>
+            <div class="text-2xl text-gray-600">Дата создания задачи:</div>
+            <div class="text-2xl font-semibold text-gray-900">{{ formatDate(task.created_at) }}</div>
           </div>
           <div>
-            <div class="text-xl text-gray-600">Организация:</div>
-            <div class="text-xl font-semibold text-gray-900">{{ task.organization_id }}</div>
+            <div class="text-2xl text-gray-600">Организация:</div>
+            <div class="text-2xl font-semibold text-gray-900">{{ task.organization_id }}</div>
           </div>
         </div>
       </div>
 
       <!-- Кнопка загрузки -->
       <button @click="openUploadDialog"
-              class="flex ml-auto align-items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium py-2 px-4
+              class="flex ml-auto align-items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white text-xl font-medium py-2 px-4
               border-round-sm border-none cursor-pointer transition-colors duration-200">
-        <i class="pi pi-upload"></i>
+        <i class="text-xl pi pi-upload"></i>
         <span>Загрузить карту дня</span>
       </button>
 
       <button @click="showVideoFolderUpload = true"
-              class="flex align-items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white text-sn font-medium py-2 px-4
+              class="flex align-items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white text-xl font-medium py-2 px-4
               border-round-sm border-none cursor-pointer transition-colors duration-200">
-        <i class="pi pi-upload"></i>
+        <i class="text-lg pi pi-upload"></i>
         <span>Загрузить папку с видео</span>
-      </button>
-
-      <button @click="showVideoFolderUpload = true"
-              class="flex align-items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white text-sn font-medium py-2 px-4
-              border-round-sm border-none cursor-pointer transition-colors duration-200">
-        <i class="pi pi-upload"></i>
       </button>
     </div>
 
     <!-- Список видео -->
     <div class="flex flex-column gap-2 bg-white border-1 border-gray-200 rounded-lg p-4">
       <div class="flex justify-content-between align-items-center">
-        <h3 class="text-xl font-semibold m-0 text-gray-900">Видеофайлы</h3>
-        <span class="text-lg text-gray-900">Всего: {{ videos.length }}</span>
+        <h3 class="text-2xl font-semibold m-0 text-gray-900">Видеофайлы</h3>
+        <span class="text-xl text-gray-900">Всего: {{ videos.length }}</span>
       </div>
 
       <!-- Фильтры статуса -->
@@ -51,7 +45,7 @@
             v-for="status in statuses"
             :key="status.value"
             @click="activeStatus = status.value"
-            class="px-3 py-1 text-sm rounded-full border-1 border-gray-200 transition-all duration-200 cursor-pointer"
+            class="px-3 py-1 text-lg rounded-full border-1 border-gray-200 transition-all duration-200 cursor-pointer"
             :class="{
             'bg-blue-100 border-blue-300 text-blue-900': activeStatus === status.value,
             'bg-gray-100 text-gray-900 hover:bg-gray-200': activeStatus !== status.value
@@ -65,7 +59,7 @@
       <div class="overflow-auto">
         <table class="w-full border-collapse">
           <thead>
-            <tr class="text-left py-3 px-2 text-lg text-gray-900">
+            <tr class="text-left py-3 px-2 text-xl text-gray-900">
               <th>Название</th>
               <th>Длительность</th>
               <th>Статус</th>
@@ -90,10 +84,8 @@
               <span>Нет данных</span>
             </td>
             <td class="py-3 px-2 text-lg">
-                <span
-                    class="inline-block px-2 py-1 rounded-full"
-                    :class="getStatusClass(video.status)"
-                >
+                <span class="inline-block px-2 py-1 rounded-full"
+                      :class="getStatusClass(video.status)">
                   {{ getStatusLabel(video.status) }}
                 </span>
             </td>
@@ -108,8 +100,8 @@
           </tbody>
         </table>
 
-        <button class="flex align-items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white text-sn font-medium py-2 px-4
-                border-round-sm border-none cursor-pointer transition-colors duration-200"
+        <button class="flex align-items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white text-lg font-medium py-2 px-4
+                border-round-sm border-none cursor-pointer transition-colors duration-200 mt-4"
                 @click="addVideosToQueue">
           Поставить видео в очередь на обработку
         </button>
@@ -264,9 +256,10 @@ export default {
       videos: [],
       statuses: [
         { label: 'Все', value: 'all', color: '#6366F1' },
-        { label: 'Активно', value: 'active', color: '#10B981' },
-        { label: 'В очереди', value: 'queued', color: '#F59E0B' },
-        { label: 'Завершено', value: 'completed', color: '#3B82F6' },
+        { label: 'Активно', value: 'processing', color: '#10B981' },
+        { label: 'В очереди', value: 'new', color: '#F59E0B' },
+        { label: 'Завершено', value: 'ready', color: '#3B82F6' },
+        { label: 'Ошибка', value: 'failed', color: '#d51d1d' },
       ],
       selectedVideo: null,
       activeStatus: 'all',
@@ -337,13 +330,12 @@ export default {
 
   methods: {
     show(id) {
-      taskApi.getHls(id).then((res) => {
-        this.streamUrl = res["hls_url"].replace("/live", "").replace(".m3u8", "/index.m3u8")
-        console.log(this.streamUrl)
-      })
-      // taskApi.getHlsHTML(id).then(html => {
-      //   console.log(html)
+      // taskApi.getHls(id).then((res) => {
+      //   this.streamUrl = res["hls_url"].replace("live")
+      //   console.log(this.streamUrl)
       // })
+      this.streamUrl = `http://localhost:8888/hls/${id}/index.m3u8`
+      console.log(this.streamUrl)
     },
 
     loadStream() {
@@ -393,10 +385,6 @@ export default {
       await taskApi.enqueueVideo(this.id)
     },
 
-    selectFolder() {
-      this.$refs.folderInput?.click()
-    },
-
     confirmFolderSelection() {
       if (this.rootPath) {
         this.isUploading = true
@@ -441,18 +429,19 @@ export default {
 
     getStatusLabel(status) {
       const map = {
-        'active': 'Активно',
-        'queued': 'В очереди',
-        'completed': 'Завершено',
+        'processing': 'Активно',
+        'new': 'Новое',
+        'ready': 'Завершено',
       }
       return map[status] || status
     },
 
     getStatusClass(status) {
       const map = {
-        'active': 'bg-green-100 text-green-900',
-        'queued': 'bg-yellow-100 text-yellow-900',
-        'completed': 'bg-blue-100 text-blue-900',
+        'new': 'bg-orange-100',
+        'processing': 'bg-green-100',
+        'failed': 'bg-red-100',
+        'ready': 'bg-blue-100',
       }
       return map[status] || 'bg-gray-100 text-gray-900'
     },

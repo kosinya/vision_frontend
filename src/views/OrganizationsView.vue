@@ -5,6 +5,7 @@ import Button from 'primevue/button';
 import Select from 'primevue/select';
 
 import { organizationsApi } from '@/api/organizationApi.js'
+import { organizationsStore } from "@/stores/organizationsStore.js";
 
 export default {
   name: 'OrganizationsView',
@@ -14,11 +15,14 @@ export default {
     Button,
     Select,
   },
+  setup() {
+    const store = organizationsStore()
+    store.loadOrganizations()
+    return { store }
+  },
   data() {
     return {
       organizations: [],
-      loading: false,
-      error: null,
       visible: false, // Видимость диалогового окна
       newOrgName: '', // Название новой организации
       search: '', // Поисковой запрос пользователя
@@ -43,30 +47,15 @@ export default {
       ]
     }
   },
-  async created() {
-    await this.loadOrganizations()
-  },
-  methods: {
-    // Загрузка списка организаций
-    // TODO: Добавить пагинацию
-    async loadOrganizations() {
-      this.loading = true
-      this.error = null
-      try {
-        this.organizations = await organizationsApi.getOrganizations()
-      } catch (err) {
-        this.error = err.message
-      } finally {
-        this.loading = false
-      }
-    },
 
+  methods: {
     async addOrganization() {
       try {
-        const newOrg = await organizationsApi.createOrganization({
+        organizationsApi.createOrganization({
           name: this.newOrgName,
+        }).then(response => {
+          this.store.loadOrganizations()
         })
-        this.organizations.push(newOrg)
       } catch (err) {
         this.error = err.message
       }
@@ -92,9 +81,10 @@ export default {
       })
     }
   },
+
   computed: {
     searchedOrganizations() {
-      let result = this.organizations;
+      let result = this.store.organizations;
 
       // Если в поле поиска что-то написано, фильтруем список
       if (this.search) {
@@ -129,71 +119,70 @@ export default {
 <template>
   <div class="flex gap-2">
     <div class="flex w-full">
-      <input-text v-model="search" class="w-full border-0 border-round-xl" placeholder="Введите данные для поиска..."></input-text>
+      <input-text v-model="search" class="w-full border-0 border-round-xl text-xl" placeholder="Введите данные для поиска..."></input-text>
     </div>
 
-    <button class="p-2 inline-flex align-items-center border-round-xl cursor-pointer bg-white border-none shadow-1 text-900">
-      <i class="pi pi-search mr-1"></i>
+    <button class="p-2 inline-flex align-items-center border-round-xl cursor-pointer bg-white border-none shadow-1 text-900 text-lg">
+      <i class="text-lg pi pi-search mr-2"></i>
       <span>Поиск</span>
     </button>
 
-    <Select v-model="selectedStatus" 
-        :options="statuses"
-        optionLabel="label"
-        optionValue="value"
-        placeholder="Фильтры"
-        class="inline-flex align-items-center border-round-xl cursor-pointer bg-white border-none shadow-1 text-900"
-        :pt="{ //меняем цвет для выбранного поля (option)
-          option: ({context}) => ({
-            class: context.selected ? 'bg-blue-100 text-gray-800' : undefined
-          })
-        }"
-        >
+    <Select v-model="selectedStatus" :options="statuses" optionLabel="label" optionValue="value"
+            placeholder="Фильтры"
+            class="inline-flex align-items-center border-round-xl cursor-pointer bg-white border-none shadow-1 text-900 text-xl"
+            :pt="{ //меняем цвет для выбранного поля (option)
+              option: ({context}) => ({
+              class: context.selected ? 'bg-blue-100 text-gray-800' : undefined
+              })
+            }">
 
-        <template #value="slotName"> <!-- записываем #value (value нашего слота) в slotName"-->
-            
-            <div v-if="slotName.value && slotName.value !== 'null'" class="flex align-items-center">
-                <i class="pi pi-filter-fill mr-2 text-gray-500"></i>
-                <span>{{ statuses.find(s => s.value === slotName.value)?.label }}</span> <!-- отображаем label соответствующего value -->
-            </div>
+      <template #value="slotName"> <!-- записываем #value (value нашего слота) в slotName"-->
+        <div v-if="slotName.value && slotName.value !== 'null'" class="flex align-items-center text-xl">
+            <i class="pi pi-filter-fill mr-2 text-gray-500 text-xl"></i>
+            <span>{{ statuses.find(s => s.value === slotName.value)?.label }}</span> <!-- отображаем label соответствующего value -->
+        </div>
 
-            <div v-else class="flex align-items-center">
-                <i class="pi pi-filter mr-2"></i>
-                <span>Фильтры</span>
-            </div>
-            
-        </template>
+        <div v-else class="flex align-items-center text-xl">
+            <i class="text-xl pi pi-filter mr-2"></i>
+            <span>Фильтры</span>
+        </div>
+      </template>
     </Select>
 
     <!-- Кнопка для добавления организации -->
     <div class="flex justify-content-end">
-      <button
-          @click="visible = true"
-          class="pi pi-plus p-2 border-round-xl cursor-pointer bg-white border-none shadow-1 text-900"
-          title="Добавить"
-      ></button>
+      <button @click="visible = true"
+              class="p-2 border-round-xl cursor-pointer bg-white border-none shadow-1 text-900 text-lg"
+              title="Добавить организацию">
+        Добавить
+      </button>
     </div>
 
   </div>
 
   <!-- Диалоговое окно для создания организации -->
-  <Dialog
-      v-model:visible="visible"
-      modal
-      header="Введите имя"
-      :style="{ width: '20rem' }"
+  <Dialog v-model:visible="visible"
+          modal
+          header="Введите имя"
+          :style="{ width: '20rem' }"
+          class="text-xl"
   >
     <div class="flex flex-column gap-3">
-      <InputText v-model="newOrgName" placeholder="Название организации" class="w-full" />
+      <InputText v-model="newOrgName" placeholder="Название организации" class="w-full text-xl" />
       <div class="flex justify-content-end">
-        <Button label="Создать" @click="addOrganization()" />
+        <Button label="Создать" class="text-xl" @click="addOrganization()" />
       </div>
     </div>
   </Dialog>
 
+  <!-- Загрузка -->
+  <div v-if="store.loading" class="p-4 text-center">
+    <i class="pi pi-spin pi-spinner"></i>
+  </div>
+
   <div v-for="organization in searchedOrganizations"
       :key="organization.id"
-      class="flex flex-row glass-effect p-3 border-round-xl mt-2"
+      class="flex flex-row glass-effect p-3 border-round-xl mt-2 overflow-y-scroll"
   >
     <img
         alt="organization logo"
@@ -206,38 +195,33 @@ export default {
       <!-- Заголовок и статус -->
       <div class="flex justify-content-between align-items-start">
         <div>
-          <h3 class="text-xl font-bold mb-1">{{ organization.name }}</h3>
-          <div class="flex align-items-center">
-            <i class="pi pi-calendar mr-2 text-sm"></i>
+          <h3 class="text-2xl font-bold mb-1">{{ organization.name }}</h3>
+          <div class="flex align-items-center text-xl">
+            <i class="pi pi-calendar mr-2"></i>
             <span>Создана: {{ formatDate(organization.created_at) }}</span>
           </div>
         </div>
         <div class="flex align-items-center ml-auto">
           <i class="pi pi-circle-fill mr-2 text-green-400"></i>
-          <span class="text-sm">Активна</span>
+          <span class="text-xl">Активна</span>
         </div>
       </div>
 
       <!-- Адрес -->
-      <div class="flex align-items-center">
+      <div class="flex align-items-center text-xl">
         <i class="pi pi-map-marker mr-2"></i>
-        <div class="text-sm">Адрес: Пример адресса</div>
+        <div>Адрес: Пример адреса</div>
       </div>
 
       <!-- Кнопки действий -->
         <div class="flex gap-2 mt-auto">
-          <button
-              class="p-2 border-none border-round cursor-pointer bg-blue-100"
-              @click="this.$router.push({
-                name: 'org-cameras',
-                params: {id: organization.id}
-              })"
-          >
-            <i class="pi pi-cog mr-2"></i>
+          <button class="p-2 border-none border-round cursor-pointer bg-blue-100 text-xl"
+                  @click="this.$router.push({name: 'org-cameras', params: {id: organization.id}})">
+            <i class="text-xl pi pi-cog mr-2"></i>
             <span>Настройки</span>
           </button>
-          <button class="p-2 border-none border-round cursor-pointer bg-blue-100">
-            <i class="pi pi-chart-bar mr-2"></i>
+          <button class="p-2 border-none border-round cursor-pointer bg-blue-100 text-xl">
+            <i class="text-xl pi pi-chart-bar mr-2"></i>
             <span>Аналитика</span>
           </button>
         </div>

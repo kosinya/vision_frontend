@@ -31,7 +31,7 @@ export default {
     <div class="w-2 p-3 gap-2 flex flex-column border-round-xl glass-effect">
       <div v-for="(menu, index) in menus"
            :key="menu.id"
-           class="custom-hover p-3 border-round cursor-pointer text-xl"
+           class="custom-hover p-3 border-round cursor-pointer text-3xl"
            :class="{'glass-active': currentRoute === menu.id,}"
            @click="navigateTo(menu.id)">
         {{ menu.name }}
