@@ -72,14 +72,14 @@ export default {
       })
     },
 
-    downloadFile() {
-      const fileUrl = 'report.docx'
-
-      const link = document.createElement('a')
-      link.href = fileUrl
-      link.download = 'отчет.docx'
-      link.click()
-    },
+    // downloadFile() {
+    //   const fileUrl = 'report.docx'
+    //
+    //   const link = document.createElement('a')
+    //   link.href = fileUrl
+    //   link.download = 'отчет.docx'
+    //   link.click()
+    // },
 
     async loadTasks() {
       this.loading = true
@@ -97,12 +97,12 @@ export default {
       if (!this.newTask.title) return;
 
       taskApi.createTask(this.newTask, this.selectedOrganization.id).then(response => {
+        // TODO: Реализовать через мутацию
         this.loadTasks();
       });
       
       this.newTask.title = this.newTask.description = "";
       this.visible = false;
-
     },
 
     formatDate(dateString) {
@@ -115,35 +115,26 @@ export default {
     }
   },
   computed: {
-    organizationsApi() {
-      return organizationsApi
-    },
     searchedTasks() {
       let result = this.tasks;
-
-      // Если в поле поиска что-то написано, фильтруем список
       if (this.search) {
         result = result.filter(item =>
           item.name.toLowerCase().includes(this.search.toLowerCase())
         );
       }
-      // Проверяем, что выбрано в selectedStatus
       // Сортировка по алфавиту
       if (this.selectedStatus === 'alpha') {
         // [...result] создает копию массива, чтобы не ломать исходный порядок
         return [...result].sort((a, b) => a.name.localeCompare(b.name));
       }
-
       // Сортировка по дате
       if (this.selectedStatus === 'date') {
         return [...result].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); // а и b - 2 сравниваемых аэлемента массива
       }
-
       // Фильтрация по статусу "Активна"
       if (this.selectedStatus === 'active') {
         return result.filter(org => org.status === 'active');
       }
-
       // Если выбрано "Все" или ничего не выбрано, возвращаем результат поиска
       return result;
     }
@@ -165,17 +156,14 @@ export default {
       <span>Поиск</span>
     </button>
 
-    <Select v-model="selectedStatus" 
-            :options="statuses"
-            optionLabel="label"
-            optionValue="value"
+    <Select v-model="selectedStatus" :options="statuses" optionLabel="label" optionValue="value"
             placeholder="Фильтры"
             class="inline-flex align-items-center border-round-xl cursor-pointer bg-white border-none shadow-1 text-900 text-lg"
             :pt="{ option: ({context}) => ({ class: context.selected ? 'bg-blue-100 text-gray-800' : undefined })}">
-      <template #value="slotName"> <!-- записываем #value (value нашего слота) в slotName"-->
+      <template #value="slotName">
           <div v-if="slotName.value && slotName.value !== 'null'" class="flex align-items-center">
               <i class="pi pi-filter-fill mr-2 text-gray-500"></i>
-              <span>{{ statuses.find(s => s.value === slotName.value)?.label }}</span> <!-- отображаем label соответствующего value -->
+              <span>{{ statuses.find(s => s.value === slotName.value)?.label }}</span>
           </div>
           <div v-else class="flex align-items-center text-lg">
               <i class="text-lg pi pi-filter mr-2"></i>
@@ -239,13 +227,8 @@ export default {
           <i class="text-xl pi pi-eye mr-2"></i>
           <span>Карта дня</span>
         </button>
-<!--        <button class="p-2 border-none border-round cursor-pointer bg-blue-100 text-xl"-->
-<!--                @click="this.getReport(taskItem.id)">-->
-<!--          <i class="text-xl pi pi-chart-bar mr-2"></i>-->
-<!--          <span>Отчет</span>-->
-<!--        </button>-->
         <button class="p-2 border-none border-round cursor-pointer bg-blue-100 text-xl"
-                @click="this.downloadFile()">
+                @click="this.getReport(taskItem.id)">
           <i class="text-xl pi pi-chart-bar mr-2"></i>
           <span>Отчет</span>
         </button>

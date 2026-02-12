@@ -1,5 +1,6 @@
 <script>
 import { organizationsApi } from '@/api/organizationApi.js'
+import { config } from '@/config'
 
 export default {
   props: {
@@ -47,7 +48,8 @@ export default {
     },
 
     redirectExternal() {
-      let url = `http://localhost:9876/api/v1/organizations/${this.id}/camera-presets/create-with-canvas`
+      // TODO: Добавить в api/organizationApi.js
+      let url = config.API_URL + `/organizations/${this.id}/camera-presets/create-with-canvas`
       const link = document.createElement('a')
       link.href = url
       link.target = '_blank'
@@ -56,19 +58,6 @@ export default {
       link.click()
       document.body.removeChild(link)
     },
-
-    formatDate(dateString) {
-      const date = new Date(dateString)
-      return date.toLocaleDateString('ru-RU', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-      })
-    },
-
-    async addCamera() {
-      console.log('Добавить камеру')
-    }
   }
 }
 </script>

@@ -54,6 +54,7 @@ export default {
         organizationsApi.createOrganization({
           name: this.newOrgName,
         }).then(response => {
+          // TODO: Реализовать через мутацию
           this.store.loadOrganizations()
         })
       } catch (err) {
@@ -63,14 +64,14 @@ export default {
       this.visible = false
     },
 
-    async deleteOrganization(id) {
-      try {
-        await organizationsApi.deleteOrganization(id)
-        this.organizations = this.organizations.filter(org => org.id !== id)
-      } catch (err) {
-        this.error = err.message
-      }
-    },
+    // async deleteOrganization(id) {
+    //   try {
+    //     await organizationsApi.deleteOrganization(id)
+    //     this.organizations = this.organizations.filter(org => org.id !== id)
+    //   } catch (err) {
+    //     this.error = err.message
+    //   }
+    // },
 
     formatDate(dateString) {
       const date = new Date(dateString)
@@ -85,30 +86,23 @@ export default {
   computed: {
     searchedOrganizations() {
       let result = this.store.organizations;
-
-      // Если в поле поиска что-то написано, фильтруем список
       if (this.search) {
         result = result.filter(item =>
           item.name.toLowerCase().includes(this.search.toLowerCase())
         );
       }
-      // Проверяем, что выбрано в selectedStatus
       // Сортировка по алфавиту
       if (this.selectedStatus === 'alpha') {
-        // [...result] создает копию массива, чтобы не ломать исходный порядок
         return [...result].sort((a, b) => a.name.localeCompare(b.name));
       }
-
       // Сортировка по дате
       if (this.selectedStatus === 'date') {
-        return [...result].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); // а и b - 2 сравниваемых аэлемента массива
+        return [...result].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       }
-
       // Фильтрация по статусу "Активна"
       if (this.selectedStatus === 'active') {
         return result.filter(org => org.status === 'active');
       }
-
       // Если выбрано "Все" или ничего не выбрано, возвращаем результат поиска
       return result;
     }
@@ -119,10 +113,12 @@ export default {
 <template>
   <div class="flex gap-2">
     <div class="flex w-full">
-      <input-text v-model="search" class="w-full border-0 border-round-xl text-xl" placeholder="Введите данные для поиска..."></input-text>
+      <input-text v-model="search" class="w-full border-0 border-round-xl text-xl"
+                  placeholder="Введите данные для поиска..."></input-text>
     </div>
 
-    <button class="p-2 inline-flex align-items-center border-round-xl cursor-pointer bg-white border-none shadow-1 text-900 text-lg">
+    <button class="p-2 inline-flex align-items-center border-round-xl cursor-pointer bg-white border-none
+                   shadow-1 text-900 text-lg">
       <i class="text-lg pi pi-search mr-2"></i>
       <span>Поиск</span>
     </button>
@@ -130,16 +126,11 @@ export default {
     <Select v-model="selectedStatus" :options="statuses" optionLabel="label" optionValue="value"
             placeholder="Фильтры"
             class="inline-flex align-items-center border-round-xl cursor-pointer bg-white border-none shadow-1 text-900 text-xl"
-            :pt="{ //меняем цвет для выбранного поля (option)
-              option: ({context}) => ({
-              class: context.selected ? 'bg-blue-100 text-gray-800' : undefined
-              })
-            }">
-
-      <template #value="slotName"> <!-- записываем #value (value нашего слота) в slotName"-->
+            :pt="{ option: ({context}) => ({class: context.selected ? 'bg-blue-100 text-gray-800' : undefined}) }">
+      <template #value="slotName">
         <div v-if="slotName.value && slotName.value !== 'null'" class="flex align-items-center text-xl">
             <i class="pi pi-filter-fill mr-2 text-gray-500 text-xl"></i>
-            <span>{{ statuses.find(s => s.value === slotName.value)?.label }}</span> <!-- отображаем label соответствующего value -->
+            <span>{{ statuses.find(s => s.value === slotName.value)?.label }}</span>
         </div>
 
         <div v-else class="flex align-items-center text-xl">
@@ -161,12 +152,8 @@ export default {
   </div>
 
   <!-- Диалоговое окно для создания организации -->
-  <Dialog v-model:visible="visible"
-          modal
-          header="Введите имя"
-          :style="{ width: '20rem' }"
-          class="text-xl"
-  >
+  <Dialog v-model:visible="visible" modal header="Введите имя"
+          :style="{ width: '20rem' }" class="text-xl">
     <div class="flex flex-column gap-3">
       <InputText v-model="newOrgName" placeholder="Название организации" class="w-full text-xl" />
       <div class="flex justify-content-end">
@@ -181,14 +168,10 @@ export default {
   </div>
 
   <div v-for="organization in searchedOrganizations"
-      :key="organization.id"
-      class="flex flex-row glass-effect p-3 border-round-xl mt-2 overflow-y-scroll"
-  >
-    <img
-        alt="organization logo"
-        class="w-1 mr-3 border-round"
-        src="https://i.pinimg.com/736x/ec/03/77/ec037754473332101c08e0bd02e6ba65.jpg"
-    />
+       :key="organization.id"
+       class="flex flex-row glass-effect p-3 border-round-xl mt-2 overflow-y-scroll">
+    <img alt="organization logo" class="w-1 mr-3 border-round"
+         src="https://i.pinimg.com/736x/ec/03/77/ec037754473332101c08e0bd02e6ba65.jpg"/>
 
     <!-- Информация справа -->
     <div class="flex flex-column gap-2 w-full">
@@ -201,10 +184,12 @@ export default {
             <span>Создана: {{ formatDate(organization.created_at) }}</span>
           </div>
         </div>
+
         <div class="flex align-items-center ml-auto">
           <i class="pi pi-circle-fill mr-2 text-green-400"></i>
           <span class="text-xl">Активна</span>
         </div>
+
       </div>
 
       <!-- Адрес -->

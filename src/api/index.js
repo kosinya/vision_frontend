@@ -1,9 +1,9 @@
 import axios from 'axios'
+import { config } from '@/config'
 
-// Базовый URL API (меняется в зависимости от среды)
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:9876/api/v1'
+// Базовый URL API
+const API_URL = config.API_URL
 
-// Создаем экземпляр axios
 const api = axios.create({
     baseURL: API_URL,
     headers: {

@@ -41,16 +41,13 @@
 
       <!-- Фильтры статуса -->
       <div class="flex flex-wrap gap-2 mb-4">
-        <button
-            v-for="status in statuses"
-            :key="status.value"
-            @click="activeStatus = status.value"
-            class="px-3 py-1 text-lg rounded-full border-1 border-gray-200 transition-all duration-200 cursor-pointer"
-            :class="{
-            'bg-blue-100 border-blue-300 text-blue-900': activeStatus === status.value,
-            'bg-gray-100 text-gray-900 hover:bg-gray-200': activeStatus !== status.value
-          }"
-        >
+        <button v-for="status in statuses" :key="status.value"
+                @click="activeStatus = status.value"
+                class="px-3 py-1 text-lg rounded-full border-1 border-gray-200 transition-all duration-200 cursor-pointer"
+                :class="{
+                  'bg-blue-100 border-blue-300 text-blue-900': activeStatus === status.value,
+                   'bg-gray-100 text-gray-900 hover:bg-gray-200': activeStatus !== status.value
+                }">
           {{ status.label }}
         </button>
       </div>
@@ -67,28 +64,30 @@
             </tr>
           </thead>
           <tbody>
-          <tr
-              v-for="video in paginatedVideos"
+          <tr v-for="video in paginatedVideos"
               :key="video.id"
               class="hover:bg-gray-100 transition-colors"
               :class="{ 'bg-blue-50': selectedVideo?.id === video.id }"
-              @click="selectVideo(video)"
-          >
+              @click="selectVideo(video)">
+
             <td class="py-3 px-2 text-lg">
               <div class="flex align-items-center">
                 <i class="pi pi-video mr-2 text-gray-900"></i>
                 <span>{{ video.title }}</span>
               </div>
             </td>
+
             <td class="py-3 px-2 text-lg">
               <span>Нет данных</span>
             </td>
+
             <td class="py-3 px-2 text-lg">
                 <span class="inline-block px-2 py-1 rounded-full"
                       :class="getStatusClass(video.status)">
                   {{ getStatusLabel(video.status) }}
                 </span>
             </td>
+
             <td>
               <button class="flex align-items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white text-sn font-medium py-2 px-4
                 border-round-sm border-none cursor-pointer transition-colors duration-200"
@@ -96,6 +95,7 @@
                 Показать
               </button>
             </td>
+
           </tr>
           </tbody>
         </table>
@@ -152,13 +152,9 @@
 
           <!-- Контейнер для видеоплеера -->
           <div class="relative w-full" style="aspect-ratio: 16/9;">
-            <video
-                id="video"
-                ref="videoElement"
-                controls
-                autoplay
-                class="w-full h-full border-round"
-            ></video>
+            <video id="video" ref="videoElement" controls
+                   autoplay class="w-full h-full border-round">
+            </video>
           </div>
         </div>
       </div>
@@ -181,11 +177,8 @@
           </p>
           <p class="text-gray-600">Поддерживаемые форматы: .xlsx, .xls</p>
         </div>
-        <input type="file"
-               ref="dialogFileInput"
-               @change="handleFileSelect"
-               accept=".xlsx,.xls"
-               class="hidden"/>
+        <input type="file" ref="dialogFileInput"
+               @change="handleFileSelect" accept=".xlsx,.xls" class="hidden"/>
       </div>
 
       <div class="flex justify-content-start gap-2">
@@ -233,6 +226,7 @@
 <script>
 import {taskApi} from "@/api/taskApi.js";
 import Hls from 'hls.js'
+import { config } from '@/config'
 
 export default {
   name: 'TaskSettingsView',
@@ -249,7 +243,7 @@ export default {
       task: {},
       players: {
         id: 1,
-        source: 'http://localhost:9876/hls/live/4c3672c6-ecff-4cf4-8e29-f0aedaca3bfe.m3u8',
+        source: '',
         status: 'Активно',
         isActive: true
       },
@@ -330,23 +324,16 @@ export default {
 
   methods: {
     show(id) {
-      // taskApi.getHls(id).then((res) => {
-      //   this.streamUrl = res["hls_url"].replace("live")
-      //   console.log(this.streamUrl)
-      // })
-      this.streamUrl = `http://localhost:8888/hls/${id}/index.m3u8`
+      this.streamUrl = config.HLS_URL + `/hls/${id}/index.m3u8`
       console.log(this.streamUrl)
     },
 
     loadStream() {
       const video = document.getElementById('video');
-
       if (!video) return
-
       if (this.hls) {
         this.hls.destroy()
       }
-
       if (Hls.isSupported()) {
         console.log("Поддерживается")
         this.hls = new Hls({ lowLatencyMode: true })
@@ -388,6 +375,7 @@ export default {
     confirmFolderSelection() {
       if (this.rootPath) {
         this.isUploading = true
+
         // Имитация загрузки
         setTimeout(() => {
           this.isUploading = false
@@ -405,12 +393,11 @@ export default {
 
     closeFileDialog() {
       this.showVideoFolderUpload = false
-      // Очищаем инпут при закрытии
       if (this.$refs.folderInput) {
         this.$refs.folderInput.value = ''
       }
     },
-    // Форматирование данных
+
     formatDate(date) {
       return new Date(date).toLocaleDateString('ru-RU', {
         day: '2-digit',
@@ -419,12 +406,6 @@ export default {
         hour: '2-digit',
         minute: '2-digit'
       })
-    },
-
-    formatDuration(seconds) {
-      const mins = Math.floor(seconds / 60)
-      const secs = seconds % 60
-      return `${mins}:${secs.toString().padStart(2, '0')}`
     },
 
     getStatusLabel(status) {
@@ -446,7 +427,6 @@ export default {
       return map[status] || 'bg-gray-100 text-gray-900'
     },
 
-    // Работа с видео
     selectVideo(video) {
       this.selectedVideo = video
     },
@@ -498,31 +478,10 @@ export default {
 
       this.isUploading = true
 
-      // Имитация загрузки
       setTimeout(() => {
         this.isUploading = false
         this.showUploadDialog = false
-
-        // Показываем уведомление
-        this.showSuccessNotification()
-
-        // Добавляем новое видео в список
-        const newId = Math.max(...this.videos.map(v => v.id)) + 1
-        const durations = ['00:03:15', '00:04:30', '00:07:45', '00:12:20', '00:05:50']
-        const randomDuration = durations[Math.floor(Math.random() * durations.length)]
-
-        this.videos.unshift({
-          id: newId,
-          name: this.selectedFile.name,
-          duration: Math.floor(Math.random() * 600) + 60,
-          status: 'queued',
-          videoDuration: randomDuration
-        })
-
-        // Сбрасываем выбранную страницу для пагинации
         this.currentPage = 1
-
-        // Очищаем файл
         this.selectedFile = null
         if (this.$refs.dialogFileInput) this.$refs.dialogFileInput.value = ''
       }, 1500)
@@ -534,23 +493,11 @@ export default {
       if (this.$refs.dialogFileInput) this.$refs.dialogFileInput.value = ''
     },
 
-    // Уведомления
-    showSuccessNotification() {
-      this.showNotification = true
-      setTimeout(() => {
-        this.showNotification = false
-      }, 3000)
-    },
-
-    hideNotification() {
-      this.showNotification = false
-    },
-
     showError(message) {
-      // Здесь можно добавить отображение ошибки
       console.error(message)
     },
   },
+
   mounted() {
     this.loadVideos();
     this.refreshInterval = setInterval(() => {
@@ -583,19 +530,7 @@ export default {
   to { opacity: 1; transform: translateY(0); }
 }
 
-.animate-fadein {
-  animation: fadein 0.3s ease-out;
-}
-
 .hidden {
   display: none;
-}
-
-.z-50 {
-  z-index: 50;
-}
-
-.grid-nogutter {
-  margin: 0;
 }
 </style>
